@@ -1,23 +1,8 @@
-import argparse
+import time
 
 import requests
 from environs import Env
 from telegram import Bot
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Бот отправляет уведомления о проверке работ на DVMN в Telegram.')
-    parser.add_argument('--chat_id', type=str, required=True, help='ID чата в Telegram')
-    return parser.parse_args()
-
-
-def get_settings() -> dict:
-    env = Env()
-    env.read_env()
-    return {
-        'bot_token': env.str('TG_BOT_TOKEN'),
-        'dvmn_token': env.str('DVMN_TOKEN'),
-    }
 
 
 def format_attempt_message(attempt: dict) -> str:
@@ -41,12 +26,9 @@ def handle_found_response(task_details: dict, chat_id: str, bot: Bot) -> str:
     return new_timestamp
 
 
-def handle_timeout_response(task_details: dict) -> str:
-    return task_details['timestamp_to_request']
-
-
-def run_long_polling(bot: Bot, chat_id: str, headers: dict) -> None:
+def run_long_polling(bot: Bot, chat_id: str, token: str) -> None:
     url = 'https://dvmn.org/api/long_polling/'
+    headers = {'Authorization': f'Token {token}'}
     timestamp = None
     while True:
         params = {}
@@ -60,19 +42,24 @@ def run_long_polling(bot: Bot, chat_id: str, headers: dict) -> None:
             if task_details['status'] == 'found':
                 timestamp = handle_found_response(task_details, chat_id, bot)
             elif task_details['status'] == 'timeout':
-                timestamp = handle_timeout_response(task_details)
+                timestamp = task_details['timestamp_to_request']
         except requests.exceptions.ReadTimeout:
             continue
         except requests.exceptions.ConnectionError:
+            time.sleep(5)
             continue
 
 
 def main():
-    args = parse_args()
-    settings = get_settings()
-    bot = Bot(token=settings['bot_token'])
-    headers = {'Authorization': f'Token {settings["dvmn_token"]}'}
-    run_long_polling(bot, args.chat_id, headers)
+    env = Env()
+    env.read_env()
+
+    bot_token = env.str('TG_BOT_TOKEN')
+    dvmn_token = env.str('DVMN_TOKEN')
+    chat_id = env.str('CHAT_ID')
+
+    bot = Bot(token=bot_token)
+    run_long_polling(bot, chat_id, dvmn_token)
 
 
 if __name__ == '__main__':

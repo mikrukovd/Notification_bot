@@ -43,12 +43,13 @@ pip install -r requirements.txt
 
 1. Получите Telegram бот токен через BotFather
 2. Получите Devman API токен на сайте dvmn.org
-3. Найдите ваш Telegram chat_id
+3. Найдите ваш Telegram `chat_id`
 4. Создайте файл `.env` в корне проекта:
 
 ```env
 TG_BOT_TOKEN=your_telegram_bot_token
 DVMN_TOKEN=your_devman_api_token
+CHAT_ID=your_telegram_chat_id
 ```
 
 ## Использование
@@ -56,7 +57,7 @@ DVMN_TOKEN=your_devman_api_token
 Запустите бота:
 
 ```bash
-python bot.py --chat_id YOUR_CHAT_ID
+python bot.py
 ```
 
 Бот будет отправлять уведомления о проверке работ в указанный Telegram чат.
