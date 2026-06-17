@@ -88,6 +88,7 @@ def main():
             run_long_polling(bot, chat_id, dvmn_token)
         except Exception:
             logging.error(traceback.format_exc())
+            time.sleep(30)
 
 
 if __name__ == "__main__":
