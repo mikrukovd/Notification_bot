@@ -77,7 +77,7 @@ def main():
     handler = TelegramLogHandler(bot, chat_id)
     handler.setFormatter(
         logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:S"
+            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
         )
     )
     logger.addHandler(handler)
