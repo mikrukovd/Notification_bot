@@ -5,6 +5,17 @@ from environs import Env
 from telegram import Bot
 
 
+class TelegramLogHandler(logging.Handler):
+    def __init__(self, bot: Bot, chat_id: str):
+        super().__init__()
+        self.bot = bot
+        self.chat_id = chat_id
+
+    def emit(self, record):
+        message = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=message[:4096])
+
+
 def format_attempt_message(attempt: dict) -> str:
     lesson_title = attempt["lesson_title"]
     lesson_url = attempt["lesson_url"]
@@ -51,8 +62,6 @@ def run_long_polling(bot: Bot, chat_id: str, token: str) -> None:
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-    logging.info("Бот запущен")
     env = Env()
     env.read_env()
 
@@ -61,6 +70,14 @@ def main():
     chat_id = env.str("CHAT_ID")
 
     bot = Bot(token=bot_token)
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    handler = TelegramLogHandler(bot, chat_id)
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    logger.addHandler(handler)
+    logger.info("Бот запущен")
+
     run_long_polling(bot, chat_id, dvmn_token)
 
 
