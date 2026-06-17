@@ -1,5 +1,6 @@
 import time
 import logging
+import traceback
 import requests
 from environs import Env
 from telegram import Bot
@@ -82,7 +83,11 @@ def main():
     logger.addHandler(handler)
     logger.info("Бот запущен")
 
-    run_long_polling(bot, chat_id, dvmn_token)
+    while True:
+        try:
+            run_long_polling(bot, chat_id, dvmn_token)
+        except Exception:
+            logging.error(traceback.format_exc())
 
 
 if __name__ == "__main__":
